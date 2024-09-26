@@ -15,7 +15,7 @@ module "ecr"{
   local-tag = var.local-tag
 }
 
-module "Ec2"{
+module "ec2"{
   source = "../../modules/Ec2"
   ec2-instance-name = var.ec2-instance-name
   subnet-id = module.vpc.public_sub_ids[0]
@@ -27,12 +27,15 @@ module "Ec2"{
   sg_ingress_rules = var.sg_ingress_rules
   sg_ingress_rules_source = var.sg_ingress_rules_source
   sg_egress_rules = var.sg_egress_rules
-  lb-sg=module.lb.lb-sg-id
+  depends_on = [module.vpc]
 
 }
 
 module "lb"{
   source = "../../modules/Loadbalancer"
   vpc-id = module.vpc.vpc_id
+  lb-sg-id = module.ec2.lb-sg-id
   instance-id = module.ec2.instance_id
+  lb-subnet-ids = module.vpc.public_sub_ids
+  depends_on = [module.vpc,module.ec2]
 }

@@ -63,6 +63,3 @@ variable "sg_egress_rules" {
 }
 
 
-variable "lb-sg" {
-    type = string
-}

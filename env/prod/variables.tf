@@ -25,13 +25,7 @@ variable "pri_subnet_cidr_list" {
 variable "ec2-instance-name" {
    type = string
 }
-variable "subnet-id" {
-   type = string
-}
 variable "key-name" {
-   type = string
-}
-variable "vpc-id" {
    type = string
 }
 
@@ -60,7 +54,6 @@ variable "sg_ingress_rules_source" {
         from = number
         to = number
         proto = string
-        source_security_group_id = string
         desc = string
       }
     ))
@@ -80,19 +73,17 @@ variable "sg_egress_rules" {
 }
 
 
-variable "sg_egress_rules_source" {
-    type        = map(object(
-      {
-        from = number
-        to = number
-        proto = string
-        source_security_group_id = string
-        desc = string
-      }
-    ))
+variable "local-repo-name" {
+  type = string
+}
+
+variable "ecr_name" {
+  type = string
 }
 
 
-
+variable "local-tag" {
+   type = string
+}
 
 

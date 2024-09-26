@@ -52,7 +52,7 @@ resource "aws_instance" "web" {
   subnet_id = var.subnet-id
   key_name = var.key-name
   iam_instance_profile = aws_iam_instance_profile.ec2_instance_profile.name
-  user_data = file("${path.module}/install-docker.sh")
+#  user_data = file("${path.module}/install-docker.sh")
   tags = {
     Name = var.ec2-instance-name
   } 
@@ -66,14 +66,38 @@ resource "aws_instance" "web" {
     }
 
     inline = [
-      
-      "docker pull var.repo-url:var.tag",
-
-      "docker run -d --name web-app -p 80:80 var.repo-url:var.tag"
+          "curl -fsSL https://get.docker.com -o get-docker.sh",
+    "sh get-docker.sh",
+    "sudo usermod -aG docker ubuntu",
+    "sudo systemctl start docker",
+    "sudo systemctl enable docker",
+    "sudo apt-get update",
+    "sudo apt-get install -y awscli",
+    "aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin ${var.repo-url}",
+    "sudo docker pull ${var.repo-url}:${var.tag}",
+    "sudo docker run -d --name web-app -p 80:80 ${var.repo-url}:${var.tag}"
     ]
   }
 }
 
+
+resource "aws_security_group" "web_app_alb_sg" {
+  name = "web_app_sg"
+   vpc_id      = var.vpc-id
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
 
 resource "aws_security_group" "ec2_secgrp" {
   name        = var.ec2-securityGroupName
@@ -103,7 +127,7 @@ resource "aws_security_group_rule" "ingress_rules_sg" {
   from_port         = each.value.from
   to_port           = each.value.to
   protocol          = each.value.proto
-  source_security_group_id   = var.lb-sg
+  source_security_group_id   = aws_security_group.web_app_alb_sg.id
   description       = each.value.desc
   security_group_id = aws_security_group.ec2_secgrp.id
 }
