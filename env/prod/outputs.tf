@@ -5,4 +5,7 @@ output "vpc_public_subnets" {
 output "vpc_private_subnets" {
   value = module.vpc.private_sub_ids
 }
+output "lb_dns" {
+  value = module.lb.lb-dns
+}
 
